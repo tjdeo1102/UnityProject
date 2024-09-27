@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class CharacterMove : MonoBehaviour
+public class PlayerMove : MonoBehaviour
 {
     [Header("Base Component")]
     [SerializeField] CharacterController controller;
@@ -13,6 +13,7 @@ public class CharacterMove : MonoBehaviour
     [Header("Move")]
     [SerializeField] float moveSpeed;
     [SerializeField] float moveMaxVelocity;
+    [SerializeField] float runSpeed;
 
     [Header("Jump")]
     [SerializeField] float jumpPower;
@@ -22,17 +23,22 @@ public class CharacterMove : MonoBehaviour
     [SerializeField] float jumpDelay;
     [SerializeField] float jumpButtonDownMaxTime;
     [SerializeField] float checkFloorDistance;
+
     [Header("Animation")]
     [SerializeField] Animator animator;
+
+    public bool isOtherAction;
 
     // Update is called once per frame
     void Update()
     {
-        if (input != null && controller != null)
+        if (input != null && controller != null && isOtherAction==false)
         {
             Move();
             Jump();
         }
+
+        JumpUpdate();
 
         AnimationUpdate();
     }
@@ -40,6 +46,11 @@ public class CharacterMove : MonoBehaviour
     void Move()
     {
         Vector2 move = input.actions["Move"].ReadValue<Vector2>();
+        // 이미 달리는 도중에 점프하는 경우에 대해서는 기존 속력 보전한 점프
+        // 점프 중에 달리는 경우는 뛰기 전 속력으로 유지
+        if (canJump == true)
+            isRun = input.actions["Run"].IsPressed();
+
         if (move == Vector2.zero)
         {
             IsWalk = false;
@@ -49,12 +60,21 @@ public class CharacterMove : MonoBehaviour
         Vector3 dir = new Vector3(move.x, 0, move.y).normalized;
 
         transform.LookAt(transform.position + dir);
-        controller.Move(dir * moveSpeed * Time.deltaTime);
+        
+        if (isRun)
+        {
+            controller.Move(dir * moveSpeed * Time.deltaTime * runSpeed);
+        }
+        else
+        {
+            controller.Move(dir * moveSpeed * Time.deltaTime);
+        }
         IsWalk = true;
     }
 
     #region Jump관련 기능
     private bool canJump = true;
+    // 이전에 이미 버튼을 누르고 있었는지 확인하는 변수
     private bool isJumpButtonDown = false;
     private int objectslayerMaskOnly = -(1 << 7);
     private float jumpButtonDownTime = 0;
@@ -101,7 +121,10 @@ public class CharacterMove : MonoBehaviour
             }
             curJumpDelay += Time.deltaTime;
         }
+    }
 
+    void JumpUpdate()
+    {
         // 점프력에 따른 점프
         // 중력 고려
         curJumpVelocity -= Physics.gravity.magnitude * Time.deltaTime;
@@ -113,7 +136,8 @@ public class CharacterMove : MonoBehaviour
     #endregion
 
     #region Animation 관련 기능
-    bool IsWalk;
+    private bool IsWalk;
+    private bool isRun;
 
     void AnimationUpdate()
     {
@@ -121,9 +145,13 @@ public class CharacterMove : MonoBehaviour
 
         // 이동 업데이트
         animator.SetBool("Walk", IsWalk);
+        animator.SetBool("Run", isRun);
 
         // 점프 업데이트
         animator.SetBool("Jump", !canJump);
+
+        // Other Ataction
+        animator.SetBool("OtherAction", isOtherAction);
     }
     #endregion
 }
