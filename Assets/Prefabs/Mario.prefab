@@ -411,8 +411,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   rb: {fileID: 3382447173134090864}
   input: {fileID: 149889413}
-  moveSpeed: 4
-  slowRunSpeed: 6
+  moveSpeed: 3
+  slowRunSpeed: 5
   slowRunTransition: 2
   fastRunSpeed: 8
   jumpPower: 7
