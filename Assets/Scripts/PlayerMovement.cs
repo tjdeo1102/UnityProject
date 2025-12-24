@@ -13,16 +13,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] float slowRunSpeed;
     [SerializeField] float slowRunTransition;
     [SerializeField] float fastRunSpeed;
-
-    [Header("Jump")]
-    [SerializeField] float jumpPower;
-    [Range(0,1)]
-    [SerializeField] float jumpMinPower;
-    [SerializeField] float gravityScale;
-
-    [SerializeField] float jumpButtonDownMaxTime;
-    [SerializeField] float jumpChainTime;
-    [SerializeField] float jumpChainPower;
+    [SerializeField] float movePenalty;
 
     [Header("Ground Check")]
     [SerializeField] Vector3 boxSize;
@@ -46,12 +37,10 @@ public class PlayerMovement : MonoBehaviour
         if (isOtherAction==false)
         {
             Move();
-            Jump();
         }
+        JumpUpdate();
 
         isGround = IsGround();
-        // GravityUpdate();
-
         AnimationUpdate();
     }
 
@@ -59,10 +48,7 @@ public class PlayerMovement : MonoBehaviour
     void Move()
     {
         Vector2 move = input.actions["Move"].ReadValue<Vector2>();
-        var run = false;
-        // Ground Check
-        if (isGround == true)
-            run = input.actions["Run"].IsPressed();
+        var run = input.actions["Run"].IsPressed();
 
         if (move == Vector2.zero)
         {
@@ -103,9 +89,13 @@ public class PlayerMovement : MonoBehaviour
         }
 
         var moveDir = speed * Time.fixedDeltaTime * dir;
-
+        if (isGround)
+            transform.rotation = Quaternion.LookRotation(moveDir);
+        else
+        {
+            moveDir /= movePenalty;
+        }
         rb.MovePosition(rb.position + moveDir);
-        transform.rotation = Quaternion.LookRotation(moveDir);
 
         if (IsWalk == false)
         {
@@ -116,56 +106,68 @@ public class PlayerMovement : MonoBehaviour
     }
     #endregion
     #region Jump
-    private bool isGround = true;
-    private bool isJumpButtonDown = false;
-    private bool isJumpDone = false;
-    private int objectslayerMaskOnly = -(1 << 7);
-    private float jumpButtonDownTime = 0f;
-    private float curJumpPower = 0f;
-    private int curJumpType = 0;
-    private float curJumpChainTime = 0f;
-    void Jump()
+    [Header("Jump")]
+    [SerializeField] float jumpMaxPower;
+    [SerializeField] float jumpMinPower;
+    [SerializeField] float fallMultiplier;
+    [SerializeField] float jumpHoldMaxTime;
+    [SerializeField] float jumpChainTime;
+    [SerializeField] float jumpChainPower;
+    bool isGround = true;
+    bool hasJumpStarted = false;
+    int objectslayerMaskOnly = -(1 << 7);
+    float jumpButtonDownTime = 0f;
+    float curJumpVelocity = 0f;
+    int curJumpType = 0;
+    float curJumpChainTime = 0f;
+    public void OnJump(InputAction.CallbackContext callback)
     {
-        var isJump = input.actions["Jump"].IsPressed();
+        if (isGround == false) return;
 
         // Jump Checking
-        if (isJump && isGround && isJumpButtonDown == false)
+        if (callback.started)
         {
+            hasJumpStarted = true;
             jumpButtonDownTime = 0f;
-            isJumpButtonDown = true;
-            isJumpDone = false;
         }
-        if (isJumpButtonDown)
+        else if (callback.canceled && hasJumpStarted)
         {
-            if ((jumpButtonDownTime > jumpButtonDownMaxTime || isJump == false) && isJumpDone == false)
+            JumpAction();
+        }
+    }
+
+    void JumpUpdate()
+    {
+        if(hasJumpStarted)
+        {
+            if (jumpButtonDownTime > jumpHoldMaxTime)
             {
-                // Jump Combo
-                if (curJumpChainTime < jumpChainTime)
-                {
-                    curJumpType++;
-                    if (curJumpType > 3)
-                    {
-                        curJumpType = 1;
-                    }
-                    curJumpChainTime = 0f;
-                }
-                else
-                {
-                    curJumpType = 1;
-                }
-                curJumpChainTime = 0f;
-
-                // Jump Power depends on (Jump Press Time, Jump Type)
-                curJumpPower = (jumpMinPower + jumpButtonDownTime / jumpButtonDownMaxTime * (1 - jumpMinPower)) * jumpPower + (jumpChainPower * curJumpType);
-                rb.AddForce(Vector3.up * curJumpPower,ForceMode.Impulse);
-
-                isJumpDone = true;
+                JumpAction();
             }
             jumpButtonDownTime += Time.fixedDeltaTime;
-            isJumpButtonDown = isJump;
         }
 
-        curJumpChainTime += Time.fixedDeltaTime;
+        if (rb.linearVelocity.y < 0f)
+        {
+            rb.linearVelocity += Vector3.up * Physics.gravity.y * (fallMultiplier - 1) * Time.fixedDeltaTime;
+        }
+        curJumpChainTime -= Time.fixedDeltaTime;    
+    }
+
+    void JumpAction()
+    {
+        // Jump Combo
+        if (curJumpChainTime > 0f)
+            curJumpType = (curJumpType + 1) % 3;
+        else
+            curJumpType = 0;
+        curJumpChainTime = jumpChainTime;
+
+        // Jump Power depends on (Jump Press Time, Jump Type)
+        curJumpVelocity = Mathf.Lerp(jumpMinPower, jumpMaxPower, jumpButtonDownTime / jumpHoldMaxTime) + jumpChainPower * curJumpType;
+        rb.linearVelocity = Vector3.up * curJumpVelocity;
+        
+        hasJumpStarted = false;
     }
 
     bool IsGround()
@@ -176,8 +178,8 @@ public class PlayerMovement : MonoBehaviour
     #endregion
 
     #region Animation
-    private bool IsWalk;
-    private RunType isRun;
+    bool IsWalk;
+    RunType isRun;
 
     void AnimationUpdate()
     {
@@ -188,7 +190,7 @@ public class PlayerMovement : MonoBehaviour
         animator.SetFloat("Velocity", speed);
 
         animator.SetInteger("JumpType", curJumpType);
-        animator.SetFloat("JumpVelocity",curJumpPower);
+        animator.SetFloat("JumpVelocity",curJumpVelocity);
         animator.SetBool("IsGround", isGround);
 
         animator.SetBool("OtherAction", isOtherAction);
