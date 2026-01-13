@@ -1,15 +1,18 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class FollowObject : MonoBehaviour
 {
     [SerializeField] Transform target;
 
-    // Update is called once per frame
-    void Update()
+	// Update is called once per frame
+    float initY;
+	void Start()
+	{
+		initY = transform.position.y;
+	}
+	void Update()
     {
-        var pos = target.position;
-        transform.position = new Vector3(pos.x, transform.position.y, pos.z);
+        transform.position = new Vector3(target.position.x, initY + target.position.y, target.position.z);
+        transform.rotation = Quaternion.Euler(transform.rotation.x, target.rotation.y, transform.rotation.z);
     }
 }
