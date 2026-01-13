@@ -1,4 +1,5 @@
 {
+    "version": 1,
     "name": "UnityProject",
     "maps": [
         {
@@ -18,7 +19,7 @@
                     "name": "Jump",
                     "type": "Button",
                     "id": "de23e8f9-ae4b-4012-b2d9-e7ea35625aee",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
@@ -27,18 +28,18 @@
                     "name": "Attack",
                     "type": "Button",
                     "id": "08f8c8ec-68bb-4629-88dd-6c5ef83d4c66",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
-                    "interactions": "",
+                    "interactions": "Press",
                     "initialStateCheck": false
                 },
                 {
                     "name": "Run",
                     "type": "Button",
                     "id": "f36e2964-c8e9-43d6-af86-8e75a0603dc4",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
-                    "interactions": "",
+                    "interactions": "Press(pressPoint=0.1,behavior=2)",
                     "initialStateCheck": false
                 }
             ],

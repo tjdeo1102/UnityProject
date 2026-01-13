@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -5,7 +7,6 @@ public class PlayerMovement : MonoBehaviour
 {
     [Header("Base Component")]
     [SerializeField] Rigidbody rb;
-    [SerializeField] PlayerInput input;
 
 
     [Header("Move")]
@@ -14,6 +15,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] float slowRunTransition;
     [SerializeField] float fastRunSpeed;
     [SerializeField] float movePenalty;
+    [SerializeField] float rotationSpeed;
+    [SerializeField] int slopeAngleWindowSize = 15;
 
     [Header("Ground Check")]
     [SerializeField] Vector3 boxSize;
@@ -34,10 +37,7 @@ public class PlayerMovement : MonoBehaviour
     }
     void FixedUpdate()
     {
-        if (isOtherAction==false)
-        {
-            Move();
-        }
+        MoveAction();
         JumpUpdate();
 
         isGround = IsGround();
@@ -45,30 +45,39 @@ public class PlayerMovement : MonoBehaviour
     }
 
     #region Move
-    void Move()
+    Vector3 moveDir;
+    bool isRunInput;
+    public void OnMove(InputAction.CallbackContext context)
     {
-        Vector2 move = input.actions["Move"].ReadValue<Vector2>();
-        var run = input.actions["Run"].IsPressed();
+        Vector2 move = context.ReadValue<Vector2>();
 
         if (move == Vector2.zero)
         {
             IsWalk = false;
             moveTimer = 0f;
-            return;
         }
-        
-        Vector3 dir = new Vector3(move.x, 0, move.y).normalized;
-        // Move Direction Depends on Camera
-        if (mainCamera != null)
+        else
         {
-            var forward = transform.position - mainCamera.transform.position;
-            forward.y = 0;
-            var right = Vector3.Cross(Vector3.up,forward);
-            dir = (forward * dir.z + right * dir.x).normalized;
-        }
+            moveTimer = slowRunTransition;
+            IsWalk = true;
 
-		// move : fastMove : run
-		if (run)
+            moveDir = new Vector3(move.x, 0, move.y).normalized;
+            // Move Direction Depends on Camera
+            if (mainCamera != null)
+            {
+                var forward = transform.position - mainCamera.transform.position;
+                forward.y = 0;
+                var right = Vector3.Cross(Vector3.up,forward);
+                moveDir = (forward * moveDir.z + right * moveDir.x).normalized;
+            }
+        }
+    }
+
+    void MoveAction()
+    {
+        if (isOtherAction || IsWalk == false) return; 
+        // move : fastMove : run
+		if (isRunInput)
         {
             isRun = RunType.Fast;
             speed = fastRunSpeed;
@@ -88,22 +97,72 @@ public class PlayerMovement : MonoBehaviour
             }
         }
 
-        var moveDir = speed * Time.fixedDeltaTime * dir;
+        var spd = speed * Time.fixedDeltaTime * moveDir;
         if (isGround)
-            transform.rotation = Quaternion.LookRotation(moveDir);
+        {
+            var targetRot = Quaternion.LookRotation(spd);
+            rb.rotation = Quaternion.Slerp(rb.rotation, targetRot, rotationSpeed * Time.fixedDeltaTime);
+
+            // slope
+            var drag = GetSlopDrag();
+            // Debug.Log( drag);
+            spd*= drag;
+        }
         else
         {
-            moveDir /= movePenalty;
+            spd /= movePenalty;
         }
-        rb.MovePosition(rb.position + moveDir);
-
-        if (IsWalk == false)
-        {
-            moveTimer = slowRunTransition;
-            IsWalk = true;    
-        }
+        rb.MovePosition(rb.position + spd);
         moveTimer -= Time.fixedDeltaTime;
     }
+    float slopeAverageAngle = 0f;
+    Queue<float> angleQueue = new Queue<float>();
+    float sumAngleX = 0f;
+    float sumAngleY = 0f;
+    float GetSlopDrag()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, Vector3.down, out hit, 1f))
+        {
+            var mapInfo = hit.collider.GetComponent<MapInfoController>();
+            float maxSlopeAngle = mapInfo != null ? mapInfo.GetMaxSlopeAngleByHitInfo(hit) : 45f;
+            // Debug.Log("Max Slope Angle: " + mapInfo?.GetMaxSlopeAngleByHitInfo(hit));
+
+            // check hill type
+            var slopeDir = Vector3.ProjectOnPlane(moveDir, hit.normal).normalized;
+            // Debug.DrawRay(hit.point, slopeDir, Color.red, 3f);
+            var isUpHill = moveDir.y < slopeDir.y;
+            // Debug.DrawRay(hit.point, moveDir, Color.blue, 3f);
+
+            float currentAngle = Vector3.Angle(Vector3.up, hit.normal);
+            angleQueue.Enqueue(currentAngle);
+            var rad = currentAngle * Mathf.Deg2Rad;
+            sumAngleX += Mathf.Cos(rad);
+            sumAngleY += Mathf.Sin(rad);
+
+            if (angleQueue.Count > slopeAngleWindowSize)
+            {
+                rad = angleQueue.Dequeue() * Mathf.Deg2Rad;
+                sumAngleX -= Mathf.Cos(rad);
+                sumAngleY -= Mathf.Sin(rad);
+            }
+            slopeAverageAngle = Mathf.Atan2(sumAngleY, sumAngleX) * Mathf.Rad2Deg;
+            if (slopeAverageAngle > 45f)
+                Debug.Log("Slope Average Angle: " + slopeAverageAngle + "maxSlopeAngle: " + maxSlopeAngle + "isUpHill: " + isUpHill + "result: " + Mathf.SmoothStep(1f,0f, slopeAverageAngle / maxSlopeAngle));
+            return isUpHill ? Mathf.SmoothStep(1f,0f, slopeAverageAngle / maxSlopeAngle) : 1f;
+        }
+        return 1f;
+    }
+    
+    public void OnRun(InputAction.CallbackContext context)
+    {
+        if (context.started)
+            isRunInput = true;
+        else if (context.canceled)
+            isRunInput = false;
+    }
+    
+
     #endregion
     #region Jump
     [Header("Jump")]

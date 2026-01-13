@@ -410,18 +410,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rb: {fileID: 3382447173134090864}
-  input: {fileID: 149889413}
   moveSpeed: 3
   slowRunSpeed: 5
   slowRunTransition: 2
   fastRunSpeed: 8
   movePenalty: 1.25
+  rotationSpeed: 5
+  slopeAngleWindowSize: 1
   boxSize: {x: 0.4, y: 0.24, z: 0.4}
   animator: {fileID: 413502039589817366}
   isOtherAction: 0
-  jumpMaxPower: 7
+  jumpMaxPower: 8
   jumpMinPower: 2
-  fallMultiplier: 3
+  fallMultiplier: 4
   jumpHoldMaxTime: 0.15
   jumpChainTime: 2
   jumpChainPower: 2
@@ -451,7 +452,19 @@ MonoBehaviour:
       m_Calls: []
   m_ActionEvents:
   - m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 149889412}
+        m_TargetAssemblyTypeName: PlayerMovement, Assembly-CSharp
+        m_MethodName: OnMove
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_ActionId: 0a3d7874-7a22-4968-a11f-c05177734fe8
     m_ActionName: 'Player/Move[/Keyboard/w,/Keyboard/upArrow,/Keyboard/s,/Keyboard/downArrow,/Keyboard/a,/Keyboard/leftArrow,/Keyboard/d,/Keyboard/rightArrow]'
   - m_PersistentCalls:
@@ -471,11 +484,35 @@ MonoBehaviour:
     m_ActionId: de23e8f9-ae4b-4012-b2d9-e7ea35625aee
     m_ActionName: 'Player/Jump[/Keyboard/leftShift]'
   - m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 2114103062}
+        m_TargetAssemblyTypeName: PlayerInteraction, Assembly-CSharp
+        m_MethodName: OnAttack
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_ActionId: 08f8c8ec-68bb-4629-88dd-6c5ef83d4c66
     m_ActionName: 'Player/Attack[/Keyboard/space]'
   - m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 149889412}
+        m_TargetAssemblyTypeName: PlayerMovement, Assembly-CSharp
+        m_MethodName: OnRun
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_ActionId: f36e2964-c8e9-43d6-af86-8e75a0603dc4
     m_ActionName: 'Player/Run[/Keyboard/z]'
   m_NeverAutoSwitchControlSchemes: 0
