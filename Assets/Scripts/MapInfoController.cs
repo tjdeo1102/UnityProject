@@ -54,7 +54,6 @@ public class MapInfoController : MonoBehaviour
             Material hitMaterial = mapRenderer.sharedMaterials[subMesh];
             if (materialToMaxSlopeAngle.TryGetValue(hitMaterial, out float maxSlopeAngle))
             {
-                // Debug.Log("SubMesh Index: " + subMesh + "subMesh material: " + mapRenderer.sharedMaterials[subMesh].name);
                 return maxSlopeAngle;
             }
         }

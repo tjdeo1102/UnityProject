@@ -1,32 +1,35 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Base Component")]
-    [SerializeField] Rigidbody rb;
+    public Rigidbody rb;
 
 
     [Header("Move")]
-    [SerializeField] float moveSpeed;
-    [SerializeField] float slowRunSpeed;
-    [SerializeField] float slowRunTransition;
-    [SerializeField] float fastRunSpeed;
-    [SerializeField] float movePenalty;
-    [SerializeField] float rotationSpeed;
-    [SerializeField] int slopeAngleWindowSize = 15;
+    public float moveSpeed;
+    public float slowRunSpeed;
+    public float slowRunTransition;
+    public float fastRunSpeed;
+    public float movePenalty;
+    public float rotationSpeed;
+    public int slopeAngleWindowSize = 15;
 
     [Header("Ground Check")]
-    [SerializeField] Vector3 boxSize;
+    public Vector3 boxSize;
 
     [Header("Animation")]
-    [SerializeField] Animator animator;
+    public Animator animator;
 
 
+    Vector3 lastPos;
     float moveTimer = 0f;
     float speed = 0f;
+    float drag;
     public bool isOtherAction;
 
     Camera mainCamera;
@@ -37,15 +40,19 @@ public class PlayerMovement : MonoBehaviour
     }
     void FixedUpdate()
     {
-        MoveAction();
+        drag = GetSlopDrag();
+        SlideUpdate();
+        MoveUpdate();
         JumpUpdate();
 
-        isGround = IsGround();
+        // isGround = IsGround();
         AnimationUpdate();
+        lastPos = transform.position;
     }
 
     #region Move
     Vector3 moveDir;
+    bool isSlide;
     bool isRunInput;
     public void OnMove(InputAction.CallbackContext context)
     {
@@ -65,7 +72,8 @@ public class PlayerMovement : MonoBehaviour
             // Move Direction Depends on Camera
             if (mainCamera != null)
             {
-                var forward = transform.position - mainCamera.transform.position;
+                // var forward = transform.position - mainCamera.transform.position;
+                var forward = mainCamera.transform.forward;
                 forward.y = 0;
                 var right = Vector3.Cross(Vector3.up,forward);
                 moveDir = (forward * moveDir.z + right * moveDir.x).normalized;
@@ -73,7 +81,7 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    void MoveAction()
+    void MoveUpdate()
     {
         if (isOtherAction || IsWalk == false) return; 
         // move : fastMove : run
@@ -101,20 +109,30 @@ public class PlayerMovement : MonoBehaviour
         if (isGround)
         {
             var targetRot = Quaternion.LookRotation(spd);
-            rb.rotation = Quaternion.Slerp(rb.rotation, targetRot, rotationSpeed * Time.fixedDeltaTime);
-
-            // slope
-            var drag = GetSlopDrag();
-            // Debug.Log( drag);
+            rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRot, rotationSpeed * Time.fixedDeltaTime));
             spd*= drag;
         }
         else
         {
             spd /= movePenalty;
         }
-        rb.MovePosition(rb.position + spd);
+        if (isSlide == false) rb.MovePosition(rb.position + spd);
         moveTimer -= Time.fixedDeltaTime;
     }
+
+    void SlideUpdate()
+    {
+        // check slide
+        if ((lastPos.y - transform.position.y) > 0.001f && isJump == false) 
+        {
+            if (drag < 0.2f) isSlide = true;
+        }
+        else
+        {
+            isSlide = false;
+        }
+    }
+
     float slopeAverageAngle = 0f;
     Queue<float> angleQueue = new Queue<float>();
     float sumAngleX = 0f;
@@ -126,7 +144,6 @@ public class PlayerMovement : MonoBehaviour
         {
             var mapInfo = hit.collider.GetComponent<MapInfoController>();
             float maxSlopeAngle = mapInfo != null ? mapInfo.GetMaxSlopeAngleByHitInfo(hit) : 45f;
-            // Debug.Log("Max Slope Angle: " + mapInfo?.GetMaxSlopeAngleByHitInfo(hit));
 
             // check hill type
             var slopeDir = Vector3.ProjectOnPlane(moveDir, hit.normal).normalized;
@@ -147,8 +164,6 @@ public class PlayerMovement : MonoBehaviour
                 sumAngleY -= Mathf.Sin(rad);
             }
             slopeAverageAngle = Mathf.Atan2(sumAngleY, sumAngleX) * Mathf.Rad2Deg;
-            if (slopeAverageAngle > 45f)
-                Debug.Log("Slope Average Angle: " + slopeAverageAngle + "maxSlopeAngle: " + maxSlopeAngle + "isUpHill: " + isUpHill + "result: " + Mathf.SmoothStep(1f,0f, slopeAverageAngle / maxSlopeAngle));
             return isUpHill ? Mathf.SmoothStep(1f,0f, slopeAverageAngle / maxSlopeAngle) : 1f;
         }
         return 1f;
@@ -166,15 +181,15 @@ public class PlayerMovement : MonoBehaviour
     #endregion
     #region Jump
     [Header("Jump")]
-    [SerializeField] float jumpMaxPower;
-    [SerializeField] float jumpMinPower;
-    [SerializeField] float fallMultiplier;
-    [SerializeField] float jumpHoldMaxTime;
-    [SerializeField] float jumpChainTime;
-    [SerializeField] float jumpChainPower;
+    public float jumpMaxPower;
+    public float jumpMinPower;
+    public float fallMultiplier;
+    public float jumpHoldMaxTime;
+    public float jumpChainTime;
+    public float jumpChainPower;
     bool isGround = true;
+    bool isJump = false;
     bool hasJumpStarted = false;
-    int objectslayerMaskOnly = -(1 << 7);
     float jumpButtonDownTime = 0f;
     float curJumpVelocity = 0f;
     int curJumpType = 0;
@@ -210,11 +225,19 @@ public class PlayerMovement : MonoBehaviour
         {
             rb.linearVelocity += Vector3.up * Physics.gravity.y * (fallMultiplier - 1) * Time.fixedDeltaTime;
         }
+        
+        if (rb.linearVelocity.y < 0f && isGround) 
+        { 
+            isJump = false;
+        }
+
         curJumpChainTime -= Time.fixedDeltaTime;    
     }
 
     void JumpAction()
     {
+        if (isJump == true) return;
+
         // Jump Combo
         if (curJumpChainTime > 0f)
             curJumpType = (curJumpType + 1) % 3;
@@ -225,19 +248,40 @@ public class PlayerMovement : MonoBehaviour
         // Jump Power depends on (Jump Press Time, Jump Type)
         curJumpVelocity = Mathf.Lerp(jumpMinPower, jumpMaxPower, jumpButtonDownTime / jumpHoldMaxTime) + jumpChainPower * curJumpType;
         rb.linearVelocity = Vector3.up * curJumpVelocity;
-        
+        isJump = true;
+
         hasJumpStarted = false;
     }
 
-    bool IsGround()
-    {
-        var cols = Physics.OverlapBox(transform.position, boxSize, transform.rotation, objectslayerMaskOnly);
-        return cols.Length > 0;
-    }
-    #endregion
+    HashSet<Collision> groundCols = new ();
 
-    #region Animation
-    bool IsWalk;
+	void OnCollisionEnter(Collision collision)
+	{
+        if (IsGroundCheck(collision))
+        {
+            groundCols.Add(collision);
+        }
+        isGround = groundCols.Count > 0;
+	}
+
+	void OnCollisionExit(Collision collision)
+	{
+		groundCols.Remove(collision);
+        isGround = groundCols.Count > 0;
+	}
+
+    bool IsGroundCheck(Collision collision)
+    {
+        foreach(var contanct in collision.contacts)
+        {
+            if (contanct.normal.y > 0.1f) return true;
+        }
+        return false;
+    }
+	#endregion
+
+	#region Animation
+	bool IsWalk;
     RunType isRun;
 
     void AnimationUpdate()
@@ -250,7 +294,8 @@ public class PlayerMovement : MonoBehaviour
 
         animator.SetInteger("JumpType", curJumpType);
         animator.SetFloat("JumpVelocity",curJumpVelocity);
-        animator.SetBool("IsGround", isGround);
+        animator.SetBool("IsJump", isJump);
+        animator.SetBool("IsSlide", isSlide);
 
         animator.SetBool("OtherAction", isOtherAction);
     }
