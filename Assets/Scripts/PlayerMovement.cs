@@ -253,20 +253,20 @@ public class PlayerMovement : MonoBehaviour
         hasJumpStarted = false;
     }
 
-    HashSet<Collision> groundCols = new ();
+    HashSet<Collider> groundCols = new ();
 
 	void OnCollisionEnter(Collision collision)
 	{
         if (IsGroundCheck(collision))
         {
-            groundCols.Add(collision);
+            groundCols.Add(collision.collider);
         }
         isGround = groundCols.Count > 0;
 	}
 
 	void OnCollisionExit(Collision collision)
 	{
-		groundCols.Remove(collision);
+		groundCols.Remove(collision.collider);
         isGround = groundCols.Count > 0;
 	}
 

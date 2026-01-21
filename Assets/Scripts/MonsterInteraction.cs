@@ -14,6 +14,7 @@ public class MonsterInteraction : MonoBehaviour
     [Range(0f,1f)]
     [SerializeField] float damageAngle;
 
+    bool isDie;
     Rigidbody rb;
 	void Awake()
 	{
@@ -21,7 +22,9 @@ public class MonsterInteraction : MonoBehaviour
 	}
 	private void OnCollisionEnter(Collision collision)
     {
-        if (collision.transform.CompareTag("PlayerAttackArea"))
+        if (isDie) return;
+
+        if (collision.collider.CompareTag("PlayerAttackArea"))
         {
             Die(DiePattern.Punch, collision.contacts[0].point);
         }
@@ -42,17 +45,22 @@ public class MonsterInteraction : MonoBehaviour
 
     void Die(DiePattern pattern, Vector3 hitPos = default)
     {
+        if (isDie) return;
+        Debug.Log("Die");
+        isDie = true;
         var seq = DOTween.Sequence();
         switch (pattern)
         {
             case DiePattern.Press:
-                rb.isKinematic = true;
-                seq.Append(transform.DOScaleY(0.01f, 0.2f))
+                GetComponentInChildren<Collider>().enabled = false;
+                seq.Append(transform.GetChild(0).DOScaleY(0.01f, 0.2f))
                     .AppendInterval(2f)
                     .OnComplete(() => Destroy(gameObject));
                 break;
             case DiePattern.Punch:
-                rb.AddForce((hitPos - transform.position).normalized + transform.up * 0.5f);
+                rb.isKinematic = false;
+                var pushDir = ((transform.position - hitPos).normalized + Vector3.up * 0.5f).normalized;
+                rb.AddForce(pushDir * 10f, ForceMode.Impulse);
                 seq.AppendInterval(2f)
                     .OnComplete(() => Destroy(gameObject));
                 break;

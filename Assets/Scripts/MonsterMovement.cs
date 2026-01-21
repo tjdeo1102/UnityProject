@@ -80,4 +80,9 @@ public class MonsterMovement : MonoBehaviour
             activationDic[currentState]?.OnEnter();
         }
     }
+
+	void OnDisable()
+	{
+		agent.enabled = false;
+	}
 }
