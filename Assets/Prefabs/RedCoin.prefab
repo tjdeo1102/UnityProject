@@ -5,6 +5,7 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
+    serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 8d3b14d534bfe764cbd9f03f2c94f2a3, type: 3}
@@ -25,15 +26,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8d3b14d534bfe764cbd9f03f2c94f2a3, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -48.96
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8d3b14d534bfe764cbd9f03f2c94f2a3, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 14.36
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8d3b14d534bfe764cbd9f03f2c94f2a3, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 6.05
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 8d3b14d534bfe764cbd9f03f2c94f2a3, type: 3}
       propertyPath: m_LocalRotation.w
@@ -68,6 +69,15 @@ PrefabInstance:
       value: RedCoin
       objectReference: {fileID: 0}
     m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8d3b14d534bfe764cbd9f03f2c94f2a3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 18300730}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8d3b14d534bfe764cbd9f03f2c94f2a3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -3133712137813034240}
   m_SourcePrefab: {fileID: 100100000, guid: 8d3b14d534bfe764cbd9f03f2c94f2a3, type: 3}
 --- !u!1 &2727311281513957963 stripped
 GameObject:
@@ -82,12 +92,20 @@ BoxCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2727311281513957963}
   m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_IsTrigger: 1
+  m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 2
+  serializedVersion: 3
   m_Size: {x: 12, y: 12, z: 1}
   m_Center: {x: 0.1, y: 6, z: 0}
---- !u!114 &18300729
+--- !u!114 &-3133712137813034240
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -96,11 +114,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 2727311281513957963}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 322b4f7a3efcc4546ba63490b69ae2ad, type: 3}
+  m_Script: {fileID: 11500000, guid: db397c58203a3734da222e8c76e42ec8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  type: 1
-  hiddenstarPrefab: {fileID: 5936751904356553736, guid: 1843ded084cbd6c48a91031a3837c0ec, type: 3}
-  respawnHeight: 3
-  starPrefab: {fileID: 5936751904356553736, guid: 4d022fbfb41d4bf44ad27c0e9a72b0a8, type: 3}
-  respawnPosition: {x: 0, y: 0, z: 0}
+  coinReward: 2
+  coinRotateSpeed: 1
+  starPrefab: {fileID: 8400434231762321612, guid: 1843ded084cbd6c48a91031a3837c0ec, type: 3}
+  getCoinSound:
+    ID: 1073741842
+    _sourceAsset: {fileID: 11400000, guid: b812afdd6f0f1a24db53384292689f29, type: 2}
+    <DebugObject>k__BackingField: {fileID: 2727311281513957963}
+  starSpawnObject: {fileID: 0}
