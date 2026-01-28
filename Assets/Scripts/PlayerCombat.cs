@@ -14,8 +14,7 @@ public class PlayerCombat : MonoBehaviour
     [SerializeField] float attackPlayTime;
 
     [Header("Take Damage")]
-    [SerializeField] Transform[] defaultRenderers;
-    [SerializeField] Transform[] damageRenderers;
+    [SerializeField] PlayerHitEffect[] hitEffects;
     [SerializeField] float knockBackPower;
     [SerializeField] float knockBackTime;
     [SerializeField] float fallSpeedLimit;
@@ -54,24 +53,19 @@ public class PlayerCombat : MonoBehaviour
         var knockVelocity = new Vector3(dir.x, 0, dir.y) * knockBackPower;
 
         movement.rb.AddForce(knockVelocity,ForceMode.Impulse);
-        SetHitRenderer(true);
-        
+        PlayHitEffect();
         yield return new WaitForSeconds(knockBackTime);
-        SetHitRenderer(false);
+        
         isKnock = false;
         movement.isOtherAction = false;
         damageCoroutine = null;
     }
 
-    void SetHitRenderer(bool isActive)
+    void PlayHitEffect()
     {
-        foreach (var item in defaultRenderers)
+        foreach (var item in hitEffects)
         {
-            item.gameObject.SetActive(!isActive);
-        }
-        foreach (var item in damageRenderers)
-        {
-            item.gameObject.SetActive(isActive);
+            item.PlayHitEffect();
         }
     }
 

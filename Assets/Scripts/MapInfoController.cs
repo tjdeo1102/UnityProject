@@ -40,23 +40,25 @@ public class MapInfoController : MonoBehaviour
         for (int i = 0; i < mapMesh.subMeshCount; i++)
         {
             var mesh = mapMesh.GetSubMesh(i);
-            for (int j = mesh.indexStart; j < mesh.indexStart + mesh.indexCount; j++ )
+            for (int j = mesh.indexStart; j < mesh.indexStart + mesh.indexCount; j+=3 )
             {
                 int triangleIndex = j / 3;
-                triangleToSubMesh[triangleIndex] = i;
+                triangleToSubMesh.Add(triangleIndex, i);
             }
         }
     }
-    public float GetMaxSlopeAngleByHitInfo(RaycastHit hitInfo)
+    public bool TryGetSlopeMaxAngle(RaycastHit hitInfo, out float angle)
     {
         if (triangleToSubMesh.TryGetValue(hitInfo.triangleIndex, out int subMesh))
         {   
             Material hitMaterial = mapRenderer.sharedMaterials[subMesh];
-            if (materialToMaxSlopeAngle.TryGetValue(hitMaterial, out float maxSlopeAngle))
+            if (materialToMaxSlopeAngle.TryGetValue(hitMaterial, out angle))
             {
-                return maxSlopeAngle;
+                // Debug.Log(hitMaterial.name);
+                return true;
             }
         }
-        return 45f; // default value
+        angle = 45f;
+        return false;
     }
 }
