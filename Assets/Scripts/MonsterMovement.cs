@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Ami.BroAudio;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
@@ -28,6 +29,15 @@ public class MonsterMovement : MonoBehaviour
     public float detectDistance;
     public float jumpPower;
 
+    [Header("SFX")]
+    public SoundID walkSound;
+    public SoundID jumpSound;
+    public SoundID dieSound;
+
+    [Header("VFX")]
+    public ParticleSystem jumpParticle;
+    public GameObject goombaDeathParticle;
+    
     Dictionary<State,StateBase> activationDic;
     State currentState = State.None;
 
@@ -53,16 +63,6 @@ public class MonsterMovement : MonoBehaviour
 	void Update()
 	{
         anim.SetFloat("Speed", agent.velocity.magnitude);
-        // if (agent.hasPath)
-        // {
-        //     Vector3 direction = agent.desiredVelocity.normalized;
-
-        //     if (direction != Vector3.zero)
-        //     {
-        //         Quaternion targetRot = Quaternion.LookRotation(direction);
-        //         transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, Time.deltaTime * 2f); 
-        //     }
-        // }
         activationDic[currentState]?.OnUpdate();
 	}
 
@@ -83,6 +83,7 @@ public class MonsterMovement : MonoBehaviour
 
 	void OnDisable()
 	{
+        ChangeState(State.None);
 		agent.enabled = false;
 	}
 }

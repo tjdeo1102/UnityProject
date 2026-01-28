@@ -1,5 +1,7 @@
 using UnityEngine;
 using DG.Tweening;
+using Ami.BroAudio;
+using System.Security.Cryptography;
 
 public enum DiePattern
 {
@@ -16,9 +18,11 @@ public class MonsterInteraction : MonoBehaviour
 
     bool isDie;
     Rigidbody rb;
+    Collider col;
 	void Awake()
 	{
 		rb = GetComponent<Rigidbody>();
+        col = GetComponent<Collider>();
 	}
 	private void OnCollisionEnter(Collision collision)
     {
@@ -26,6 +30,7 @@ public class MonsterInteraction : MonoBehaviour
 
         if (collision.collider.CompareTag("PlayerAttackArea"))
         {
+            col.material.bounciness = 0.5f;
             Die(DiePattern.Punch, collision.contacts[0].point);
         }
         else if(collision.transform.TryGetComponent<PlayerCombat>(out var player))
@@ -46,23 +51,30 @@ public class MonsterInteraction : MonoBehaviour
     void Die(DiePattern pattern, Vector3 hitPos = default)
     {
         if (isDie) return;
-        Debug.Log("Die");
         isDie = true;
         var seq = DOTween.Sequence();
         switch (pattern)
         {
             case DiePattern.Press:
                 GetComponentInChildren<Collider>().enabled = false;
-                seq.Append(transform.GetChild(0).DOScaleY(0.01f, 0.2f))
+                seq.Append(transform.GetChild(0).DOScaleY(0.02f, 0.2f))
                     .AppendInterval(2f)
-                    .OnComplete(() => Destroy(gameObject));
+                    .OnComplete(() => 
+                    {
+                        BroAudio.Play(movement.dieSound);
+                        Destroy(gameObject);
+                    });
                 break;
             case DiePattern.Punch:
                 rb.isKinematic = false;
                 var pushDir = ((transform.position - hitPos).normalized + Vector3.up * 0.5f).normalized;
                 rb.AddForce(pushDir * 10f, ForceMode.Impulse);
                 seq.AppendInterval(2f)
-                    .OnComplete(() => Destroy(gameObject));
+                    .OnComplete(() => 
+                    {
+                        BroAudio.Play(movement.dieSound);
+                        Destroy(gameObject);
+                    });
                 break;
             default:
                 break;
@@ -71,4 +83,10 @@ public class MonsterInteraction : MonoBehaviour
         movement.enabled = false;
         enabled = false;
     }
+
+	void OnDestroy()
+	{
+		GameManager.Instance.GenerateYellowCoin(transform.position + Vector3.up * 2f);
+        Instantiate(movement.goombaDeathParticle,transform.position,Quaternion.identity,null); 
+	}
 }

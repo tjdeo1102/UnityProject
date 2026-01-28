@@ -1,26 +1,33 @@
+using DG.Tweening;
 using UnityEngine;
+using Ami.BroAudio;
 
 public class WanderState : StateBase
 {
 	float retargetTimer;
 	float wanderTimer;
     Vector3 originPosition;
-
+	Sequence seq;
 	void Start()
 	{
 		originPosition = transform.position;
+		seq = DOTween.Sequence();
+		seq.AppendCallback(() => {BroAudio.Play(monster.walkSound,transform);})
+		.AppendInterval(1f / monster.walkMaxSpeed)
+		.SetLoops(-1, LoopType.Restart)
+		.SetLink(monster.gameObject);
 	}
 
 	public override void OnEnter()
 	{
 		retargetTimer = 0f;
 		wanderTimer = 0f;
+		seq.Play();
 	}
 
 	public override void OnUpdate()
 	{
-		Debug.DrawRay(transform.position,transform.forward * monster.detectDistance,Color.red,3f);
-		if (Physics.Raycast(transform.position, transform.forward * monster.detectDistance, out var hit) && retargetTimer > monster.retargetDelay)
+		if (Physics.Raycast(transform.position, transform.forward, out var hit, monster.detectDistance) && retargetTimer > monster.retargetDelay)
 		{
 			if (hit.transform.CompareTag("Player"))
 			{
@@ -38,5 +45,9 @@ public class WanderState : StateBase
 		retargetTimer += Time.deltaTime;
 		wanderTimer += Time.deltaTime;
 	}
-	
+
+	public override void OnExit()
+	{
+		seq.Kill();
+	}
 }
