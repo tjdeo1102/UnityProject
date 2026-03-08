@@ -1,8 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Ami.BroAudio;
-using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -11,7 +8,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("Base Component")]
     public Rigidbody rb;
     public Collider mainCollider;
-
+    
 
     [Header("Move")]
     public float moveSpeed;

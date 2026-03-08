@@ -1,9 +1,13 @@
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerCombat : MonoBehaviour
+public interface IDamageable
+{
+    public void OnDamage(Vector3 otherPosition, int damage);
+}
+
+public class PlayerCombat : MonoBehaviour, IDamageable
 {
     [Header("Base Component")]
     [SerializeField] PlayerMovement movement;
@@ -12,6 +16,8 @@ public class PlayerCombat : MonoBehaviour
     [Header("Attack")]
     [SerializeField] GameObject[] attackAreaObjects;
     [SerializeField] float attackPlayTime;
+    public Transform grabPoint;
+    public MonsterInteraction grabbedMonster;
 
     [Header("Take Damage")]
     [SerializeField] PlayerHitEffect[] hitEffects;
@@ -73,16 +79,22 @@ public class PlayerCombat : MonoBehaviour
     #region GeneralAttack
     bool isAttack;
     private float curAttackPlayTime = 0f;
-    public void OnAttack(InputAction.CallbackContext context)
+	public void OnAttack(InputAction.CallbackContext context)
     {
         if (context.performed && isAttack == false)
         {
+            movement.isOtherAction = true;
+            isAttack = true;
+            if (grabbedMonster != null)
+            {
+                grabbedMonster.OnThrow(this, (transform.forward + Vector3.up * 0.5f).normalized, 10f);
+                return;
+            }
+
             foreach (var item in attackAreaObjects)
             {
                 item.SetActive(true);
             }
-            movement.isOtherAction = true;
-            isAttack = true;
         }
     }
 
@@ -121,5 +133,5 @@ public class PlayerCombat : MonoBehaviour
         animator.SetBool("IsAttack", isAttack);
         animator.SetBool("IsKnock", isKnock);
     }
-    #endregion
+	#endregion
 }

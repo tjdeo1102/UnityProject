@@ -17,7 +17,9 @@ public class RedCoin : Coin
 
         if (GameDataModel.Instance.RedCoin == 8)
         {
-            Instantiate(starPrefab, starSpawnObject.transform.position + Vector3.up * 2, Quaternion.identity, transform.root).isGameOverStar = true;
+            Debug.Log("Spawn Red Coin Star");
+            var obj = Instantiate(starPrefab, starSpawnObject.transform.position + Vector3.up * 2, Quaternion.identity,null);
+            Debug.Log(obj.name);
         }
     }
 }
