@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2884370049200098325}
   - component: {fileID: 2884370049200098324}
   - component: {fileID: 2884370049200098323}
+  - component: {fileID: 1685078712990906084}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -25,13 +26,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2884370049200098322}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -3.18, y: 0.6000001, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2884370049200098324
 MonoBehaviour:
@@ -45,6 +46,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7c464a0b066624429049f1304deab98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  YellowCoin: {fileID: 4479972560027907386, guid: 80c7b8908bf07a248a9b4b6af8a925d3, type: 3}
+  GetStarShotCamera: {fileID: 0}
+  Player: {fileID: 0}
 --- !u!114 &2884370049200098323
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -59,7 +63,31 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   power: 8
   life: 5
-  yellowCoin: 0
+  yellowCoin: 99
   hasHiddenStar: 0
-  redCoin: 7
+  redCoin: 0
   star: 0
+  IsGetHiddenStar: 0
+--- !u!114 &1685078712990906084
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2884370049200098322}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 385ffc06106304cc3824d5bcf25a7037, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _onlyPlayOnce: 0
+  _playOnEnable: 1
+  _stopOnDisable: 0
+  _overrideFadeOut: -1
+  _sound:
+    ID: 268435458
+    _sourceAsset: {fileID: 11400000, guid: b812afdd6f0f1a24db53384292689f29, type: 2}
+    <DebugObject>k__BackingField: {fileID: 2884370049200098322}
+  _overrideGroup: {fileID: 0}
+  _positionMode: 0
+  _delay: 0

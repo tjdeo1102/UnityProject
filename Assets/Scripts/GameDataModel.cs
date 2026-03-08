@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -31,14 +29,15 @@ public class GameDataModel : MonoBehaviour
             if (value < 0)
             {
                 power = 0;
-                // 파워가 없으면, 생명을 잃음
                 Life--;
             }
+            else if (power == value) return;
             else if (value > 8)
             {
                 power = 8;
-            }    
+            }
             else power = value;
+
             OnPowerChanged?.Invoke(power); 
         } 
     }
@@ -50,7 +49,11 @@ public class GameDataModel : MonoBehaviour
         set
         {
             if (value < 0) life = 0;
-            else life = value;
+            else if (life == value) return;
+            else
+            {
+                life = value;
+            }
             OnLifeChanged?.Invoke(life);
         }
     }
@@ -63,12 +66,12 @@ public class GameDataModel : MonoBehaviour
         set
         {
             if (value < 0) yellowCoin = 0;
+            else if (yellowCoin == value) return;
             else
             {
                 var dif = value - yellowCoin;
                 if (dif > 0)
                 {
-                    //코인 차익만큼 파워 회복
                     Power += dif;
                 }
                 yellowCoin = value;
@@ -87,7 +90,11 @@ public class GameDataModel : MonoBehaviour
         set
         {
             if (value < 0) redCoin = 0;
-            else redCoin = value;
+            else if (redCoin == value) return;
+            else
+            {
+                redCoin = value;
+            }
             OnRedCoinChanged?.Invoke(redCoin);
         }
     }
@@ -100,13 +107,9 @@ public class GameDataModel : MonoBehaviour
         set
         {
             if (value < 0) star = 0;
+            else if (star == value) return;
             else
             {
-                if (star < value)
-                {
-                    // 일단은 스타 구분없이 씬 종료
-                    GameManager.Instance.LoadScene(-1);
-                }
                 star = value;
             }
             OnStarChanged?.Invoke(star);
@@ -121,4 +124,7 @@ public class GameDataModel : MonoBehaviour
     public UnityAction<int> OnRedCoinChanged;
 
     public UnityAction<int> OnStarChanged;
+
+
+    public bool IsGetHiddenStar;
 }

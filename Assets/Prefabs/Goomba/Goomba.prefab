@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6952360583168834343}
   m_Layer: 0
   m_Name: Goomba
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -104,7 +104,7 @@ GameObject:
   - component: {fileID: 6083908835514574272}
   m_Layer: 0
   m_Name: Goomba
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -160,7 +160,7 @@ GameObject:
   - component: {fileID: 1178322710505918311}
   m_Layer: 0
   m_Name: Leg_R_end
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -193,7 +193,7 @@ GameObject:
   - component: {fileID: 2509696474694805000}
   m_Layer: 0
   m_Name: JumpEffect
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5082,7 +5082,7 @@ GameObject:
   - component: {fileID: 888040274218388115}
   m_Layer: 0
   m_Name: Leg_L
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5114,7 +5114,7 @@ GameObject:
   - component: {fileID: 76815196870663483}
   m_Layer: 0
   m_Name: "\uC544\uB9C8\uD29C\uC5B4"
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5146,7 +5146,7 @@ GameObject:
   - component: {fileID: 4915236408969490045}
   m_Layer: 0
   m_Name: Hip
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5182,6 +5182,8 @@ GameObject:
   - component: {fileID: 8401161209465193025}
   - component: {fileID: 8401161209465193026}
   - component: {fileID: 382572178}
+  - component: {fileID: 7304692066977727033}
+  - component: {fileID: 781611716047515205}
   m_Layer: 7
   m_Name: Goomba
   m_TagString: Enemy
@@ -5218,6 +5220,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 0}
+  interaction: {fileID: 0}
   anim: {fileID: 0}
   walkMaxSpeed: 1
   runMaxSpeed: 4
@@ -5233,6 +5236,10 @@ MonoBehaviour:
     ID: 1073741837
     _sourceAsset: {fileID: 11400000, guid: b812afdd6f0f1a24db53384292689f29, type: 2}
     <DebugObject>k__BackingField: {fileID: 8401161209465193028}
+  chaseSound:
+    ID: 0
+    _sourceAsset: {fileID: 0}
+    <DebugObject>k__BackingField: {fileID: 8401161209465193028}
   jumpSound:
     ID: 1073741838
     _sourceAsset: {fileID: 11400000, guid: b812afdd6f0f1a24db53384292689f29, type: 2}
@@ -5242,7 +5249,9 @@ MonoBehaviour:
     _sourceAsset: {fileID: 11400000, guid: b812afdd6f0f1a24db53384292689f29, type: 2}
     <DebugObject>k__BackingField: {fileID: 8401161209465193028}
   jumpParticle: {fileID: 2049218870871651697}
-  goombaDeathParticle: {fileID: 6679369407235214691, guid: 4470a0f5d72c90b48b6ca20398772e2b, type: 3}
+  deathParticle: {fileID: 6679369407235214691, guid: 4470a0f5d72c90b48b6ca20398772e2b, type: 3}
+  chaseParticle: {fileID: 0}
+  currentState: 0
 --- !u!195 &8401161209465193024
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -5327,6 +5336,40 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   movement: {fileID: 8401161209465193039}
   damageAngle: 0.7
+  chainAttackDiePattern: 1
+  canStomped: 1
+  canThrow: 0
+  hasTouchDamage: 1
+  isGrabbed: 0
+  isThrowing: 0
+  isDie: 0
+  grabbedLocalPosition: {x: 0, y: 0, z: 0}
+--- !u!114 &7304692066977727033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8401161209465193028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc0cce6b73d361242b9c6aeaf1e63a4f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  stateType: 1
+--- !u!114 &781611716047515205
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8401161209465193028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a58bbbf6cbaebe42a3001168b8a7daf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  stateType: 2
 --- !u!1 &8460678188124159508
 GameObject:
   m_ObjectHideFlags: 0
@@ -5338,7 +5381,7 @@ GameObject:
   - component: {fileID: 4003357460906531003}
   m_Layer: 0
   m_Name: Leg_R
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5370,7 +5413,7 @@ GameObject:
   - component: {fileID: 190758019334282324}
   m_Layer: 0
   m_Name: Leg_L_end
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
