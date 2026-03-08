@@ -2,7 +2,7 @@ using DG.Tweening;
 using UnityEngine;
 using Ami.BroAudio;
 
-public class WanderState : StateBase
+public class GoombaWanderState : StateBase
 {
 	float retargetTimer;
 	float wanderTimer;

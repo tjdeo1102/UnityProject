@@ -2,7 +2,7 @@ using Ami.BroAudio;
 using DG.Tweening;
 using UnityEngine;
 
-public class ChaseState : StateBase
+public class GoombaChaseState : StateBase
 {
 	float releaseTimer;
 	float repathTimer;

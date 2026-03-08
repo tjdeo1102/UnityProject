@@ -5,6 +5,7 @@ public class StateBase : MonoBehaviour
 {
 	[Header("Base")]
 	protected MonsterMovement monster;
+	public State stateType;
 	void Awake()
 	{
 		monster = GetComponent<MonsterMovement>();
