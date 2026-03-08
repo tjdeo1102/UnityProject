@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Ami.BroAudio;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -14,6 +13,7 @@ public class MonsterMovement : MonoBehaviour
 
     [Header("Base")]
     public GameObject target;
+    public MonsterInteraction interaction;
     public Animator anim;
     public float walkMaxSpeed;
     public float runMaxSpeed;
@@ -31,31 +31,37 @@ public class MonsterMovement : MonoBehaviour
 
     [Header("SFX")]
     public SoundID walkSound;
+    public SoundID chaseSound;
     public SoundID jumpSound;
     public SoundID dieSound;
 
     [Header("VFX")]
     public ParticleSystem jumpParticle;
-    public GameObject goombaDeathParticle;
+    public GameObject deathParticle;
+    public ParticleSystem chaseParticle;
     
-    Dictionary<State,StateBase> activationDic;
-    State currentState = State.None;
+    [Header("State")]
+    public Dictionary<State,StateBase> activationDic;
+    public State currentState;
 
 	void Awake()
 	{
 		anim = GetComponentInChildren<Animator>();
+        interaction = GetComponent<MonsterInteraction>();
+        agent = GetComponent<NavMeshAgent>();
+        currentState = State.None;
         // agent.updateRotation = false;
 	}
 
 
 	void Start()
     {
-        activationDic = new ()
+        activationDic = new () {{State.None, null}};
+        foreach (var state in GetComponents<StateBase>())
         {
-            {State.None, null},
-            {State.Wander, transform.AddComponent<WanderState>()},
-            {State.Chase, transform.AddComponent<ChaseState>()}
-        };
+            activationDic.Add(state.stateType, state);
+        }
+
         target = GameManager.Instance.Player.gameObject;
         ChangeState(State.Wander);
     }
@@ -66,10 +72,6 @@ public class MonsterMovement : MonoBehaviour
         activationDic[currentState]?.OnUpdate();
 	}
 
-    public void SuccessAttack()
-    {
-        ChangeState(State.Wander);
-    }
 
     public void ChangeState(State state)
     {
